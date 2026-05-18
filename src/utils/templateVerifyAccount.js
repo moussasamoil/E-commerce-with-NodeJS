@@ -6,12 +6,12 @@ export const buildVerifyEmailTemplate = (otp, name = "User") => {
       <h2 style="color:#333;">Welcome, ${name} 👋</h2>
       
       <p style="color:#555; font-size:16px;">
-        Thanks for signing up. Please verify your email address by clicking the button below.
+        Thanks for signing up. Please verify your email address using the below OTP.
       </p>
 
-      <p>
+      <h1>
          ${otp}
-      </p>
+      </h1>
 
       <p style="margin-top:30px; font-size:12px; color:#999;">
         If you didn’t create this account, you can safely ignore this email.

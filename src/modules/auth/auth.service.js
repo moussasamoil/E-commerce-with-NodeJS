@@ -3,6 +3,7 @@ import { userModel } from "../../models/user.model.js"
 import bcrypt from 'bcrypt'
 import randomstring from "randomstring";
 import { verifyAddedEmail } from "../../utils/sendEmail.js";
+import { otpModel } from "../../models/otp.model.js";
 // get all users 
 export const getAllUsers = async (req, res, next) => {
     let users = await userModel.find();
@@ -19,8 +20,9 @@ export const signUp = async (req, res, next) => {
     const hashPassword = bcrypt.hashSync(password, 7, process.env.HASH_KEY);
     let save = await userModel.create({ email, name, password: hashPassword, age, role });
     let otp = await randomstring.generate({ length: 6, charset: "alphabetic" });
-    let sendEmail = await verifyAddedEmail(email, 'Verify Account On E-commerce', otp, name)
-    res.status(201).json({ message: 'user created successfully, Check your email to verify account', info: save , sendEmail:sendEmail });
+    let sendEmail = await verifyAddedEmail(email, 'Verify Account On E-commerce', otp, name);
+    const saveOtp = await otpModel.create({ email, otp });
+    res.status(201).json({ message: 'user created successfully, Check your email to verify account'});
 }
 
 // sign in method
