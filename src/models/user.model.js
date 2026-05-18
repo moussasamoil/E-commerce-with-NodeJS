@@ -27,7 +27,12 @@ const userSchema = new mongoose.Schema( {
         notNull: true,
         required: true,
         enum:role,
+    },
+    verify:{
+        type:Boolean,
+        default:false
     }
-});
+
+},{timestamps:true});
 
 export const userModel = mongoose.model('user',userSchema);
