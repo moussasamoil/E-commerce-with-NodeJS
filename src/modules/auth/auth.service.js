@@ -44,8 +44,8 @@ export const signIn = async (req, res, next) => {
     let comparePass = bcrypt.compareSync(password, checkExistEmail?.password, process.env.HASH_KEY);
     if (!comparePass) return next(new Error('wrong password try again', { cause: 400 }));
 
-    let token = jwt.sign({ email, id: checkExistEmail?._id, role: checkExistEmail?.role }, process.env.JWT_PRIVATE_KEY)
-    res.status(200).json({ message: 'login successfully', token: token })
+    let access_token = jwt.sign({ email, id: checkExistEmail?._id, role: checkExistEmail?.role }, process.env.JWT_PRIVATE_KEY ,{expiresIn:"10M"})
+    res.status(200).json({ message: 'login successfully', access_token: access_token })
 }
 // verify account by sending otp after register
 export const verifyAccount = async (req, res, next) => {
@@ -64,7 +64,7 @@ export const verifyAccount = async (req, res, next) => {
     await checkOtp.deleteOne();
     return res.status(200).json({ message: 'user verified successfully now you could login' })
 }
-
+// send opt to verify or change password
 export const tryAnotherOtp = async (req, res, next) => {
     let { email, cause } = req.body;
 
@@ -80,13 +80,20 @@ export const tryAnotherOtp = async (req, res, next) => {
     const saveOtp = await otpModel.create({ email, otp, cause: cause });
     res.status(200).json({ message: 'otp send successfully', otpInfo: saveOtp })
 }
-
+// change password 
 export const changePassword = async (req, res, next) => {
-    let { email, otp, newPass };
+    let { email, otp, newPass }=req.body;
     let checkUser = await userModel.findOne({ email });
     if (!checkUser) return next(new Error('this user did not found try correct email or sign up first', { cause: 404 }));
 
     let checkOtp = await otpModel.findOne({ email, otp });
     if (!checkOtp) return next(new Error('this otp not found for this email'));
 
-    if(checkOtp.cause !== causeForOtp.forgetPass) return next(new Error('kmvfdv' , {cause:400}));
+    if (checkOtp.cause !== causeForOtp.changePassword) return next(new Error('cause should be changePassword', { cause: 400 }));
+
+    let hashPass = bcrypt.hashSync(newPass, 7, process.env.HASH_KEY);
+    checkUser.password = hashPass;
+    await checkUser.save();
+    await checkOtp.deleteOne();
+    res.status(200).json({message:"password changed successfully "});
+}

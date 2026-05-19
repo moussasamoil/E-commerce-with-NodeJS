@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export const causeForOtp = {
     verify: "verify",
-    forgetPass: "forgetPassword"
+    changePassword: "changePassword"
 }
 
 const otpSchema = new mongoose.Schema({

@@ -24,3 +24,9 @@ export const sendAnotherOpt = Joi.object({
     email:Joi.string().required(),
     cause:Joi.string().valid(...Object.values(causeForOtp)).required(),
 }).required(true);
+
+export const changePassword = Joi.object({
+    email:Joi.string().required(),
+    newPass:Joi.string().required().min(6).max(20),
+    otp:Joi.string().required(),
+}).required(true);
