@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import dotenv from 'dotenv';
 dotenv.config();
-import { buildVerifyEmailTemplate } from "./templateVerifyAccount.js";
+import { buildEmailTemplate } from "./templateHtml.js";
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -17,7 +17,7 @@ export const verifyAddedEmail = async (email, subject, otp, name) => {
             from: `<${process.env.SENDER_EMAIL}>`, // sender address
             to: email, // list of recipients
             subject: subject, // subject line
-            html: buildVerifyEmailTemplate(otp, name), // HTML body
+            html: buildEmailTemplate(otp, name), // HTML body
         });
         console.log("message send successfully");
     } catch (err) {

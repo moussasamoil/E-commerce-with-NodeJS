@@ -1,5 +1,6 @@
 import Joi from "joi";
 import { role } from "../models/user.model.js";
+import { causeForOtp } from "../models/otp.model.js";
 
 export const signUpValidate = Joi.object({
     name: Joi.string().min(3).max(50),
@@ -13,3 +14,13 @@ export const signInValidate = Joi.object({
     password: Joi.string().required(),
     email: Joi.string().required()
 }).required();
+
+export const sendOpt = Joi.object({
+    email:Joi.string().required(),
+    otp:Joi.string().required(),
+}).required(true);
+
+export const sendAnotherOpt = Joi.object({
+    email:Joi.string().required(),
+    cause:Joi.string().valid(...Object.values(causeForOtp)).required(),
+}).required(true);

@@ -1,4 +1,4 @@
-export const buildVerifyEmailTemplate = (otp, name = "User") => {
+export const buildEmailTemplate = (otp, name = "User") => {
   return `
   <div style="font-family: Arial, sans-serif; background-color:#f4f4f4; padding:20px;">
     <div style="max-width:600px; margin:auto; background:#ffffff; padding:30px; border-radius:10px; text-align:center;">
@@ -6,7 +6,7 @@ export const buildVerifyEmailTemplate = (otp, name = "User") => {
       <h2 style="color:#333;">Welcome, ${name} 👋</h2>
       
       <p style="color:#555; font-size:16px;">
-        Thanks for signing up. Please verify your email address using the below OTP.
+        Thanks for signing up. Please using the below OTP it will expire after five minutes.
       </p>
 
       <h1>
