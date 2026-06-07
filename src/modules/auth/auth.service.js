@@ -19,8 +19,8 @@ export const signUp = async (req, res, next) => {
     let checkExistEmail = await userModel.findOne({ email });
     if (checkExistEmail) return next(new Error('Conflict this email already used', { cause: 409 }));
 
-    const hashPassword = bcrypt.hashSync(password, 7, process.env.HASH_KEY);
-    let save = await userModel.create({ email, name, password: hashPassword, age, role });
+    let newUser = new userModel({ email, name, password,age, role });
+    await newUser.save();
 
     let otp = await generateOtp();
     console.log(otp)
@@ -47,6 +47,7 @@ export const signIn = async (req, res, next) => {
     let access_token = jwt.sign({ email, id: checkExistEmail?._id, role: checkExistEmail?.role }, process.env.JWT_PRIVATE_ACCESS_KEY, { expiresIn: "10M" });
     let refresh_token = jwt.sign({ email, id: checkExistEmail?._id, role: checkExistEmail?.role }, process.env.JWT_PRIVATE_REFRESH_KEY, { expiresIn: "7d" });
     res.status(200).json({ message: 'login successfully', access_token,refresh_token })
+    
 }
 // verify account by sending otp after register
 export const verifyAccount = async (req, res, next) => {
