@@ -30,3 +30,7 @@ export const changePassword = Joi.object({
     newPass:Joi.string().required().min(6).max(20),
     otp:Joi.string().required(),
 }).required(true);
+
+export const refreshToken = Joi.object({
+    refreshToken:Joi.string().required()
+}).required(true);
