@@ -1,10 +1,11 @@
 import jwt from "jsonwebtoken";
-import { userModel } from "../../models/user.model.js"
+import { provider, userModel } from "../../models/user.model.js"
 import bcrypt from 'bcrypt'
 import randomstring from "randomstring";
 import { verifyAddedEmail } from "../../utils/sendEmail.js";
 import { causeForOtp, otpModel } from "../../models/otp.model.js";
 import { generateOtp } from "../../utils/generateOTP.js";
+import { OAuth2Client } from "google-auth-library";
 
 // get all users 
 export const getAllUsers = async (req, res, next) => {
@@ -19,7 +20,7 @@ export const signUp = async (req, res, next) => {
     let checkExistEmail = await userModel.findOne({ email });
     if (checkExistEmail) return next(new Error('Conflict this email already used', { cause: 409 }));
 
-    let newUser = new userModel({ email, name, password,age, role });
+    let newUser = new userModel({ email, name, password, age, role });
     await newUser.save();
 
     let otp = await generateOtp();
@@ -46,8 +47,8 @@ export const signIn = async (req, res, next) => {
 
     let access_token = jwt.sign({ email, id: checkExistEmail?._id, role: checkExistEmail?.role }, process.env.JWT_PRIVATE_ACCESS_KEY, { expiresIn: "10M" });
     let refresh_token = jwt.sign({ email, id: checkExistEmail?._id, role: checkExistEmail?.role }, process.env.JWT_PRIVATE_REFRESH_KEY, { expiresIn: "7d" });
-    res.status(200).json({ message: 'login successfully', access_token,refresh_token })
-    
+    res.status(200).json({ message: 'login successfully', access_token, refresh_token })
+
 }
 // verify account by sending otp after register
 export const verifyAccount = async (req, res, next) => {
@@ -101,11 +102,46 @@ export const changePassword = async (req, res, next) => {
 }
 
 export const refreshToken = async (req, res, next) => {
-    let { refreshToken  } = req.body;
-    let user = jwt.verify(refreshToken,process.env.JWT_PRIVATE_REFRESH_KEY);
+    let { refreshToken } = req.body;
+    let user = jwt.verify(refreshToken, process.env.JWT_PRIVATE_REFRESH_KEY);
     let checkUser = await userModel.findById(user?.id);
-    if(!checkUser)return next(new Error('this user not found'));
-    let access_token = jwt.sign({id:checkUser._id,email:checkUser.email , role:checkUser.role},process.env.JWT_PRIVATE_ACCESS_KEY,{expiresIn:"10m"});
-    let refresh_token = jwt.sign({id:checkUser._id,email:checkUser.email , role:checkUser.role}, process.env.JWT_PRIVATE_REFRESH_KEY ,{expiresIn:"7d"});
-    res.status(200).json({message:"user refresh token successfully" , access_token,refresh_token})
+    if (!checkUser) return next(new Error('this user not found'));
+    let access_token = jwt.sign({ id: checkUser._id, email: checkUser.email, role: checkUser.role }, process.env.JWT_PRIVATE_ACCESS_KEY, { expiresIn: "10m" });
+    let refresh_token = jwt.sign({ id: checkUser._id, email: checkUser.email, role: checkUser.role }, process.env.JWT_PRIVATE_REFRESH_KEY, { expiresIn: "7d" });
+    res.status(200).json({ message: "user refresh token successfully", access_token, refresh_token })
+}
+
+// sign up with gmail 
+export const signUpWithGmail = async (req, res, next) => {
+    const { idToken } = req.body
+    const client = new OAuth2Client();
+    async function verify() {
+        const ticket = await client.verifyIdToken({
+            idToken: idToken,
+            audience: '657861325652-h12lbn9khdms0b98u4e02knkalu4qev5.apps.googleusercontent.com',  // Specify the WEB_CLIENT_ID of the app that accesses the backend
+        });
+        const payload = ticket.getPayload();
+        return payload;
+    }
+    let verifyEmail = await verify();
+    let { email, email_verified, name, picture } = verifyEmail
+    //console.log(verifyEmail);
+    let user = await userModel.findOne({ email });
+    if (user) return next(new Error('this user email already exist', { cause: 400 }))
+    if (!email_verified)return next(new Error('this email not verified', { cause: 400 }))
+    
+    //console.log(provider.google)
+    let createUser = await userModel.create({ email, verify: email_verified, name, provider: provider.google, profilePic: picture })
+    res.status(201).json({ message: 'user created successfully' })
+}
+
+export const setPassword = async (req, res, next) => {
+    let { email, password } = req.body;
+    let user = await userModel.findOne({ email });
+    if (!user) return next(new Error('this user email not exist', { cause: 400 }))
+    if (user.provider != provider.google) return next(new Error(`this user assigned with different provider not google`))
+    if (user.password) return next(new Error("password is exit for this user"))
+    user.password = password
+    await user.save();
+    res.status(200).json({ message: `user updated successfully `, info: user })
 }

@@ -34,3 +34,12 @@ export const changePassword = Joi.object({
 export const refreshToken = Joi.object({
     refreshToken:Joi.string().required()
 }).required(true);
+
+export const signUpWithGmail = Joi.object({
+    idToken:Joi.string().required()
+})
+
+export const setPassword = Joi.object({
+    password : Joi.string().required(),
+    email:Joi.string().required()
+})
