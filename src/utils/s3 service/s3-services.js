@@ -11,6 +11,7 @@ export class S3Service {
         }
     });
 
+    
     uploadFile = async (file, keyPrefix = "pictures/profile", userId) => {
         const key = `${keyPrefix}/${userId}-${file.originalname}`;
 
