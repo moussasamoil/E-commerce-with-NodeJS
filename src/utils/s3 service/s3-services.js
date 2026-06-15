@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { PutObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import dotenv from 'dotenv';
 dotenv.config()
 
@@ -22,6 +22,15 @@ export class S3Service {
         });
         await this.client.send(command);
         return key
+    }
+
+    downloadFile = async (key) => {
+        const command = new GetObjectCommand({
+            Bucket: process.env.BUCKET_NAME,
+            Key: key
+        });
+        const response = await this.client.send(command);
+        return response.Body;
     }
 
 
