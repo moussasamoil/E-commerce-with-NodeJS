@@ -24,14 +24,6 @@ export class S3Service {
         return key
     }
 
-    downloadFile = async (key) => {
-        const command = new GetObjectCommand({
-            Bucket: process.env.BUCKET_NAME,
-            Key: key
-        });
-        const response = await this.client.send(command);
-        return response.Body;
-    }
-
+ 
 
 }
