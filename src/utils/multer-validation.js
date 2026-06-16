@@ -15,12 +15,15 @@ export const allowFiles = {
     ]
 }
 
-export const fileFilter = function (allowFiles = []) {
+export const fileFilter = function (allowFormat = []) {
     return (req, file, cb) => {
-        const isAllowed = allowFiles.includes(file.mimetype);
+
+        const fileName = file.mimetype;
+        console.log(file);
+        const isAllowed = allowFormat.includes(fileName);
         if (!isAllowed) {
-           return cb(new Error("invalid file type "),false)
+            return cb(new Error("invalid file type "), false)
         }
-        cb(null,true)
+        cb(null, true)
     }
 }

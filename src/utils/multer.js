@@ -15,5 +15,5 @@ export const uploadFile = (type = storageType.memory, allowFormats = allowFiles.
           cb(null,Date.now()+file.originalname);
         }
     })
-    return multer({storage,fileFilter:fileFilter(allowFiles),limits:{fileSize:fileSize*1024*1024}})
+    return multer({storage,fileFilter:fileFilter(allowFormats),limits:{fileSize:fileSize*1024*1024}})
 }

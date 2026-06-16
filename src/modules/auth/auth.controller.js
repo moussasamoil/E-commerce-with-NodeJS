@@ -4,6 +4,8 @@ import { validation } from "../../validation/global.validation.js";
 import { changePassword, refreshToken, sendAnotherOpt, sendOpt, setPassword, signInValidate, signUpValidate, signUpWithGmail } from "../../validation/auth.validate.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { authorization } from "../../utils/authorization.js";
+import { storageType, uploadFile } from "../../utils/multer.js";
+import { allowFiles } from "../../utils/multer-validation.js";
 
 export const authRouter = Router();
 
@@ -15,4 +17,6 @@ authRouter.post("/tryAnotherOtp", validation(sendAnotherOpt), asyncHandler(authS
 authRouter.post("/changePassword", validation(changePassword), asyncHandler(authService.changePassword));
 authRouter.post("/refreshToken", validation(refreshToken), asyncHandler(authService.refreshToken));
 authRouter.post("/signUpWithGmail" , validation(signUpWithGmail) ,asyncHandler(authService.signUpWithGmail));
-authRouter.post("/setPassword" ,validation(setPassword) ,asyncHandler(authService.setPassword))
+authRouter.post("/setPassword" ,validation(setPassword) ,asyncHandler(authService.setPassword));
+authRouter.post("/uploadProfilePic" ,authorization , uploadFile().single("image") , asyncHandler(authService.uploadProfilePic) )
+authRouter.get("/getProfileImage" ,authorization , asyncHandler(authService.getProfileImage))

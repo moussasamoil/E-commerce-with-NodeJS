@@ -19,5 +19,6 @@ export const authorization = async (req, res, next) => {
     if (!checkExistUser) return next(new Error("this user not found ", { cause: 404 }));
 
     req.token = decode;
+    req.info = checkExistUser
     next();
 }

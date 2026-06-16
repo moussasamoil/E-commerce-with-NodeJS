@@ -6,6 +6,7 @@ import { verifyAddedEmail } from "../../utils/sendEmail.js";
 import { causeForOtp, otpModel } from "../../models/otp.model.js";
 import { generateOtp } from "../../utils/generateOTP.js";
 import { OAuth2Client } from "google-auth-library";
+import s3Services from "../../utils/s3 service/s3-services.js";
 
 // get all users 
 export const getAllUsers = async (req, res, next) => {
@@ -128,8 +129,8 @@ export const signUpWithGmail = async (req, res, next) => {
     //console.log(verifyEmail);
     let user = await userModel.findOne({ email });
     if (user) return next(new Error('this user email already exist', { cause: 400 }))
-    if (!email_verified)return next(new Error('this email not verified', { cause: 400 }))
-    
+    if (!email_verified) return next(new Error('this email not verified', { cause: 400 }))
+
     //console.log(provider.google)
     let createUser = await userModel.create({ email, verify: email_verified, name, provider: provider.google, profilePic: picture })
     res.status(201).json({ message: 'user created successfully' })
@@ -144,4 +145,29 @@ export const setPassword = async (req, res, next) => {
     user.password = password
     await user.save();
     res.status(200).json({ message: `user updated successfully `, info: user })
+}
+
+export const uploadProfilePic = async (req, res, next) => {
+    let id = req.token.id;
+
+    if (!req.file) return next(new Error("image is required"))
+    let user = await userModel.findById(id);
+
+    if (!user) return next(new Error("this user not found"));
+
+    let uploadPic = await s3Services.uploadFile(req.file, "pictures/profile", user._id);
+    if (!uploadPic) return next(new Error("failed to upload image"))
+    user.profilePic = uploadPic;
+    await user.save();
+    res.status(200).json({ message: "image upload successfully" })
+}
+
+export const getProfileImage = async (req, res, next) => {
+    let key = Array.isArray(req.info.profilePic) ? req.info.profilePic.at(-1) : req.info.profilePic;
+    if (!key) return next(new Error("their is no profile picture for this user"));
+
+    let image = await s3Services.getImageUrl(key);
+    if (!image) return next(new Error("something went wrong in s3 "));
+    res.setHeader("Content-Type", image.ContentType);
+    image.Body.pipe(res);
 }
